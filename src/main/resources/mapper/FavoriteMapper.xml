@@ -1,0 +1,40 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.campus.campussecondhandapi.mapper.FavoriteMapper">
+    
+    <resultMap id="BaseResultMap" type="com.campus.campussecondhandapi.entity.Favorite">
+        <id column="id" property="id"/>
+        <result column="user_id" property="userId"/>
+        <result column="product_id" property="productId"/>
+        <result column="create_time" property="createTime"/>
+        <association property="product" javaType="com.campus.campussecondhandapi.entity.Product">
+            <id column="product_id" property="id"/>
+            <result column="product_name" property="name"/>
+            <result column="price" property="price"/>
+            <result column="image" property="image"/>
+        </association>
+    </resultMap>
+    
+    <select id="selectByUserId" resultType="com.campus.campussecondhandapi.entity.Favorite">
+        SELECT f.*
+        FROM favorite f
+        WHERE f.user_id = #{userId}
+        ORDER BY f.create_time DESC
+    </select>
+    
+    <select id="existsByUserIdAndProductId" resultType="int">
+        SELECT COUNT(*) FROM favorite 
+        WHERE user_id = #{userId} AND product_id = #{productId}
+    </select>
+    
+    <insert id="insert" parameterType="com.campus.campussecondhandapi.entity.Favorite" useGeneratedKeys="true" keyProperty="id">
+        INSERT INTO favorite (user_id, product_id, create_time)
+        VALUES (#{userId}, #{productId}, NOW())
+    </insert>
+    
+    <delete id="deleteByUserIdAndProductId">
+        DELETE FROM favorite
+        WHERE user_id = #{userId} AND product_id = #{productId}
+    </delete>
+    
+</mapper>

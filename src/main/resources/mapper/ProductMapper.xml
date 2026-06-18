@@ -1,0 +1,174 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.campus.campussecondhandapi.mapper.ProductMapper">
+    
+    <resultMap id="BaseResultMap" type="com.campus.campussecondhandapi.entity.Product">
+        <id column="id" property="id"/>
+        <result column="name" property="name"/>
+        <result column="price" property="price"/>
+        <result column="original_price" property="originalPrice"/>
+        <result column="category" property="category"/>
+        <result column="image" property="image"/>
+        <result column="images" property="images"/>
+        <result column="description" property="description"/>
+        <result column="condition" property="condition"/>
+        <result column="publish_time" property="publishTime"/>
+        <result column="is_hot" property="isHot"/>
+        <result column="is_new" property="isNew"/>
+        <result column="stock" property="stock"/>
+        <result column="status" property="status"/>
+        <result column="seller_id" property="sellerId"/>
+        <result column="view_count" property="viewCount"/>
+        <result column="created_at" property="createdAt"/>
+        <result column="updated_at" property="updatedAt"/>
+        <association property="seller" javaType="com.campus.campussecondhandapi.entity.User">
+            <id column="seller_id" property="id"/>
+            <result column="seller_name" property="name"/>
+            <result column="seller_avatar" property="avatar"/>
+            <result column="seller_rating" property="rating"/>
+            <result column="seller_sold_count" property="soldCount"/>
+        </association>
+    </resultMap>
+    
+    <select id="selectAll" resultMap="BaseResultMap">
+        SELECT p.*, u.name as seller_name, u.avatar as seller_avatar, u.rating as seller_rating, u.sold_count as seller_sold_count
+        FROM product p
+        LEFT JOIN user u ON p.seller_id = u.id
+        WHERE p.status = 'active'
+        <if test="keyword != null and keyword != ''">
+            AND (p.name LIKE CONCAT('%', #{keyword}, '%') OR p.description LIKE CONCAT('%', #{keyword}, '%'))
+        </if>
+        <if test="category != null and category != ''">
+            AND p.category = #{category}
+        </if>
+        <choose>
+            <when test="sortBy == 'price_asc'">
+                ORDER BY p.price ASC
+            </when>
+            <when test="sortBy == 'price_desc'">
+                ORDER BY p.price DESC
+            </when>
+            <when test="sortBy == 'time_desc'">
+                ORDER BY p.publish_time DESC
+            </when>
+            <otherwise>
+                ORDER BY p.is_hot DESC, p.publish_time DESC
+            </otherwise>
+        </choose>
+        LIMIT #{offset}, #{pageSize}
+    </select>
+    
+    <select id="countAll" resultType="long">
+        SELECT COUNT(*) FROM product
+        WHERE status = 'active'
+        <if test="keyword != null and keyword != ''">
+            AND (name LIKE CONCAT('%', #{keyword}, '%') OR description LIKE CONCAT('%', #{keyword}, '%'))
+        </if>
+        <if test="category != null and category != ''">
+            AND category = #{category}
+        </if>
+    </select>
+    
+    <select id="selectById" resultMap="BaseResultMap">
+        SELECT p.*, u.name as seller_name, u.avatar as seller_avatar, u.rating as seller_rating, u.sold_count as seller_sold_count
+        FROM product p
+        LEFT JOIN user u ON p.seller_id = u.id
+        WHERE p.id = #{id}
+    </select>
+    
+    <select id="selectHotProducts" resultMap="BaseResultMap">
+        SELECT p.*, u.name as seller_name, u.avatar as seller_avatar, u.rating as seller_rating, u.sold_count as seller_sold_count
+        FROM product p
+        LEFT JOIN user u ON p.seller_id = u.id
+        WHERE p.status = 'active' AND p.is_hot = true
+        ORDER BY p.publish_time DESC
+        LIMIT #{offset}, #{pageSize}
+    </select>
+    
+    <select id="selectNewProducts" resultMap="BaseResultMap">
+        SELECT p.*, u.name as seller_name, u.avatar as seller_avatar, u.rating as seller_rating, u.sold_count as seller_sold_count
+        FROM product p
+        LEFT JOIN user u ON p.seller_id = u.id
+        WHERE p.status = 'active'
+        ORDER BY p.publish_time DESC
+        LIMIT #{offset}, #{pageSize}
+    </select>
+    
+    <select id="selectByCategory" resultMap="BaseResultMap">
+        SELECT p.*, u.name as seller_name, u.avatar as seller_avatar, u.rating as seller_rating, u.sold_count as seller_sold_count
+        FROM product p
+        LEFT JOIN user u ON p.seller_id = u.id
+        WHERE p.category = #{categoryId} AND p.status = 'active'
+        <if test="keyword != null and keyword != ''">
+            AND (p.name LIKE CONCAT('%', #{keyword}, '%') OR p.description LIKE CONCAT('%', #{keyword}, '%'))
+        </if>
+        <choose>
+            <when test="sortBy == 'price_asc'">
+                ORDER BY p.price ASC
+            </when>
+            <when test="sortBy == 'price_desc'">
+                ORDER BY p.price DESC
+            </when>
+            <when test="sortBy == 'time_desc'">
+                ORDER BY p.publish_time DESC
+            </when>
+            <otherwise>
+                ORDER BY p.is_hot DESC, p.publish_time DESC
+            </otherwise>
+        </choose>
+        LIMIT #{offset}, #{pageSize}
+    </select>
+    
+    <select id="countByCategory" resultType="long">
+        SELECT COUNT(*) FROM product
+        WHERE category = #{categoryId} AND status = 'active'
+        <if test="keyword != null and keyword != ''">
+            AND (name LIKE CONCAT('%', #{keyword}, '%') OR description LIKE CONCAT('%', #{keyword}, '%'))
+        </if>
+    </select>
+    
+    <insert id="insert" parameterType="com.campus.campussecondhandapi.entity.Product" useGeneratedKeys="true" keyProperty="id">
+        INSERT INTO product (name, price, original_price, category, image, images, description, `condition`, 
+                           seller_id, stock, status, is_hot, is_new, publish_time, created_at, updated_at)
+        VALUES (#{name}, #{price}, #{originalPrice}, #{category}, #{image}, #{images}, #{description}, #{condition},
+                #{sellerId}, #{stock}, #{status}, #{isHot}, #{isNew}, NOW(), NOW(), NOW())
+    </insert>
+    
+    <update id="update" parameterType="com.campus.campussecondhandapi.entity.Product">
+        UPDATE product
+        <set>
+            <if test="name != null">name = #{name},</if>
+            <if test="price != null">price = #{price},</if>
+            <if test="originalPrice != null">original_price = #{originalPrice},</if>
+            <if test="category != null">category = #{category},</if>
+            <if test="image != null">image = #{image},</if>
+            <if test="images != null">images = #{images},</if>
+            <if test="description != null">description = #{description},</if>
+            <if test="condition != null">`condition` = #{condition},</if>
+            <if test="stock != null">stock = #{stock},</if>
+            <if test="status != null">status = #{status},</if>
+            <if test="isHot != null">is_hot = #{isHot},</if>
+            <if test="isNew != null">is_new = #{isNew},</if>
+            <if test="viewCount != null">view_count = #{viewCount},</if>
+            updated_at = NOW()
+        </set>
+        WHERE id = #{id}
+    </update>
+    
+    <update id="deleteById">
+        UPDATE product SET status = 'inactive', updated_at = NOW() WHERE id = #{id}
+    </update>
+    
+    <select id="selectBySellerId" resultMap="BaseResultMap">
+        SELECT p.*, u.name as seller_name, u.avatar as seller_avatar, u.rating as seller_rating, u.sold_count as seller_sold_count
+        FROM product p
+        LEFT JOIN user u ON p.seller_id = u.id
+        WHERE p.seller_id = #{sellerId}
+        ORDER BY p.publish_time DESC
+    </select>
+    
+    <update id="updateStock">
+        UPDATE product SET stock = #{stock}, updated_at = NOW() WHERE id = #{id}
+    </update>
+    
+</mapper>

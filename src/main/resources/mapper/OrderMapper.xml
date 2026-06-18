@@ -1,0 +1,63 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.campus.campussecondhandapi.mapper.OrderMapper">
+    
+    <resultMap id="BaseResultMap" type="com.campus.campussecondhandapi.entity.Order">
+        <id column="id" property="id"/>
+        <result column="product_id" property="productId"/>
+        <result column="product_name" property="productName"/>
+        <result column="product_image" property="productImage"/>
+        <result column="price" property="price"/>
+        <result column="quantity" property="quantity"/>
+        <result column="status" property="status"/>
+        <result column="buyer_id" property="buyerId"/>
+        <result column="seller_id" property="sellerId"/>
+        <result column="address" property="address"/>
+        <result column="reviewed" property="reviewed"/>
+        <result column="create_time" property="createTime"/>
+        <result column="update_time" property="updateTime"/>
+    </resultMap>
+    
+    <select id="selectByBuyerId" resultMap="BaseResultMap">
+        SELECT * FROM `order`
+        WHERE buyer_id = #{buyerId}
+        <if test="status != null and status != '' and status != 'all'">
+            AND status = #{status}
+        </if>
+        ORDER BY create_time DESC
+        LIMIT #{offset}, #{pageSize}
+    </select>
+    
+    <select id="countByBuyerId" resultType="long">
+        SELECT COUNT(*) FROM `order`
+        WHERE buyer_id = #{buyerId}
+        <if test="status != null and status != '' and status != 'all'">
+            AND status = #{status}
+        </if>
+    </select>
+    
+    <select id="selectById" resultMap="BaseResultMap">
+        SELECT * FROM `order` WHERE id = #{id}
+    </select>
+    
+    <insert id="insert" parameterType="com.campus.campussecondhandapi.entity.Order">
+        INSERT INTO `order` (id, product_id, product_name, product_image, price, quantity, status,
+                           buyer_id, seller_id, address, create_time, update_time, reviewed)
+        VALUES (#{id}, #{productId}, #{productName}, #{productImage}, #{price}, #{quantity}, #{status},
+                #{buyerId}, #{sellerId}, #{address}, NOW(), NOW(), false)
+    </insert>
+    
+    <update id="updateStatus">
+        UPDATE `order` 
+        SET status = #{status},
+            update_time = NOW()
+        WHERE id = #{id}
+    </update>
+    
+    <select id="selectBySellerId" resultMap="BaseResultMap">
+        SELECT * FROM `order`
+        WHERE seller_id = #{sellerId}
+        ORDER BY create_time DESC
+    </select>
+    
+</mapper>

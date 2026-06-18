@@ -1,0 +1,48 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.campus.campussecondhandapi.mapper.UserMapper">
+    
+    <resultMap id="BaseResultMap" type="com.campus.campussecondhandapi.entity.User">
+        <id column="id" property="id"/>
+        <result column="username" property="username"/>
+        <result column="password" property="password"/>
+        <result column="name" property="name"/>
+        <result column="avatar" property="avatar"/>
+        <result column="phone" property="phone"/>
+        <result column="email" property="email"/>
+        <result column="address" property="address"/>
+        <result column="rating" property="rating"/>
+        <result column="sold_count" property="soldCount"/>
+        <result column="created_at" property="createdAt"/>
+        <result column="updated_at" property="updatedAt"/>
+    </resultMap>
+    
+    <select id="selectByUsername" resultMap="BaseResultMap">
+        SELECT * FROM user WHERE username = #{username}
+    </select>
+    
+    <select id="selectById" resultMap="BaseResultMap">
+        SELECT * FROM user WHERE id = #{id}
+    </select>
+    
+    <insert id="insert" parameterType="com.campus.campussecondhandapi.entity.User" useGeneratedKeys="true" keyProperty="id">
+        INSERT INTO user (username, password, name, avatar, phone, email, address, rating, sold_count, created_at, updated_at)
+        VALUES (#{username}, #{password}, #{name}, #{avatar}, #{phone}, #{email}, #{address}, #{rating}, #{soldCount}, NOW(), NOW())
+    </insert>
+    
+    <update id="update" parameterType="com.campus.campussecondhandapi.entity.User">
+        UPDATE user
+        <set>
+            <if test="name != null">name = #{name},</if>
+            <if test="avatar != null">avatar = #{avatar},</if>
+            <if test="phone != null">phone = #{phone},</if>
+            <if test="email != null">email = #{email},</if>
+            <if test="address != null">address = #{address},</if>
+            <if test="rating != null">rating = #{rating},</if>
+            <if test="soldCount != null">sold_count = #{soldCount},</if>
+            updated_at = NOW()
+        </set>
+        WHERE id = #{id}
+    </update>
+    
+</mapper>

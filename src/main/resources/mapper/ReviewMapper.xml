@@ -1,0 +1,28 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.campus.campussecondhandapi.mapper.ReviewMapper">
+    
+    <select id="selectByProductId" resultType="com.campus.campussecondhandapi.entity.Review">
+        SELECT r.*, u.name as user_name, u.avatar
+        FROM review r
+        LEFT JOIN user u ON r.user_id = u.id
+        WHERE r.product_id = #{productId}
+        ORDER BY r.time DESC
+        LIMIT #{offset}, #{pageSize}
+    </select>
+    
+    <select id="countByProductId" resultType="long">
+        SELECT COUNT(*) FROM review WHERE product_id = #{productId}
+    </select>
+    
+    <insert id="insert" parameterType="com.campus.campussecondhandapi.entity.Review" useGeneratedKeys="true" keyProperty="id">
+        INSERT INTO review (product_id, user_id, rating, content, time)
+        VALUES (#{productId}, #{userId}, #{rating}, #{content}, NOW())
+    </insert>
+    
+    <select id="existsByUserIdAndProductId" resultType="int">
+        SELECT COUNT(*) FROM review 
+        WHERE user_id = #{userId} AND product_id = #{productId}
+    </select>
+    
+</mapper>
